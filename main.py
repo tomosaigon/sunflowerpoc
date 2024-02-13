@@ -8,14 +8,15 @@ import string
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
+import pickle   # for saving and loading the tokenizer
 
 # Define the text cleaning function
 def clean_text(text):
-  text = text.lower()   # Convert text to lower case
-  text = re.sub(r'\[.*?\]', '', text)   # Remove text in square brackets
-  text = re.sub(r'[%s]' % re.escape(string.punctuation), '', text)   # Remove punctuation
-  text = re.sub(r'\w*\d\w*', '', text)   # Remove words containing numbers
-  return text
+      text = text.lower()   # Convert text to lower case
+      text = re.sub(r'\[.*?\]', '', text)   # Remove text in square brackets
+      text = re.sub(r'[%s]' % re.escape(string.punctuation), '', text)   # Remove punctuation
+      text = re.sub(r'\w*\d\w*', '', text)   # Remove words containing numbers
+      return text
 
 # Load the unseen data
 df_unseen = pd.read_csv('unseen_data.csv')
@@ -23,11 +24,9 @@ df_unseen = pd.read_csv('unseen_data.csv')
 # Clean the 'content' column of unseen data
 df_unseen['content'] = df_unseen['content'].apply(lambda x: clean_text(str(x)))
 
-# Initialize the tokenizer with a specified vocabulary size
-tokenizer = Tokenizer(num_words=5000)
-
-# Fit the tokenizer on your text data
-tokenizer.fit_on_texts(df_unseen['content'])
+# Load the tokenizer
+with open('tokenizer.pickle', 'rb') as handle:
+      tokenizer = pickle.load(handle)
 
 # Transform your text data to sequences of integers
 unseen_sequences = tokenizer.texts_to_sequences(df_unseen['content'])
